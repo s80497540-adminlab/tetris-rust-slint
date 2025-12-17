@@ -20,6 +20,7 @@ impl Color {
     }
 }
 
+// EXTRA COMMENTS FOR VERIFYING PULL REQUEST WORKS
 // Tetromino colors
 const COLORS: [Color; 7] = [
     Color { r: 0, g: 255, b: 255 },   // I - Cyan

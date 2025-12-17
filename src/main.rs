@@ -163,25 +163,37 @@ impl GameState {
     }
 
     fn move_left(&mut self) {
-        if let Some(ref mut piece) = self.current_piece {
-            if self.can_move(piece, -1, 0) {
-                piece.x -= 1;
+        if let Some(piece) = &self.current_piece {
+            let moved_piece = Tetromino {
+                x: piece.x - 1,
+                ..piece.clone()
+            };
+            if self.can_move(&moved_piece, 0, 0) {
+                self.current_piece = Some(moved_piece);
             }
         }
     }
 
     fn move_right(&mut self) {
-        if let Some(ref mut piece) = self.current_piece {
-            if self.can_move(piece, 1, 0) {
-                piece.x += 1;
+        if let Some(piece) = &self.current_piece {
+            let moved_piece = Tetromino {
+                x: piece.x + 1,
+                ..piece.clone()
+            };
+            if self.can_move(&moved_piece, 0, 0) {
+                self.current_piece = Some(moved_piece);
             }
         }
     }
 
     fn move_down(&mut self) -> bool {
-        if let Some(ref mut piece) = self.current_piece {
-            if self.can_move(piece, 0, 1) {
-                piece.y += 1;
+        if let Some(piece) = &self.current_piece {
+            let moved_piece = Tetromino {
+                y: piece.y + 1,
+                ..piece.clone()
+            };
+            if self.can_move(&moved_piece, 0, 0) {
+                self.current_piece = Some(moved_piece);
                 return true;
             } else {
                 self.lock_piece();
@@ -192,11 +204,11 @@ impl GameState {
     }
 
     fn rotate(&mut self) {
-        if let Some(ref mut piece) = self.current_piece {
+        if let Some(piece) = &self.current_piece {
             let mut rotated = piece.clone();
             rotated.rotate();
             if self.can_move(&rotated, 0, 0) {
-                *piece = rotated;
+                self.current_piece = Some(rotated);
             }
         }
     }
@@ -254,41 +266,47 @@ impl GameState {
         }
     }
 
-    fn get_display_grid(&self) -> [[Cell; GRID_WIDTH]; GRID_HEIGHT] {
-        let mut display_grid = [[Cell {
-            color: slint::Color::from_rgb_u8(0, 0, 0),
-            filled: false,
-        }; GRID_WIDTH]; GRID_HEIGHT];
+    fn get_display_grid(&self) -> Vec<Vec<Cell>> {
+        let mut display_grid = Vec::new();
 
-        // Draw locked pieces
         for y in 0..GRID_HEIGHT {
+            let mut row = Vec::new();
             for x in 0..GRID_WIDTH {
+                let mut cell = Cell {
+                    color: slint::Color::from_rgb_u8(0, 0, 0),
+                    filled: false,
+                };
+
+                // Draw locked pieces
                 if let Some(color) = self.grid[y][x] {
-                    display_grid[y][x] = Cell {
+                    cell = Cell {
                         color: color.to_slint_color(),
                         filled: true,
                     };
                 }
-            }
-        }
 
-        // Draw current piece
-        if let Some(ref piece) = self.current_piece {
-            for i in 0..4 {
-                for j in 0..4 {
-                    if piece.shape[i][j] {
-                        let x = piece.x + j as i32;
-                        let y = piece.y + i as i32;
-                        
-                        if y >= 0 && y < GRID_HEIGHT as i32 && x >= 0 && x < GRID_WIDTH as i32 {
-                            display_grid[y as usize][x as usize] = Cell {
-                                color: piece.color.to_slint_color(),
-                                filled: true,
-                            };
+                // Draw current piece
+                if let Some(ref piece) = self.current_piece {
+                    for i in 0..4 {
+                        for j in 0..4 {
+                            if piece.shape[i][j] {
+                                let px = piece.x + j as i32;
+                                let py = piece.y + i as i32;
+                                
+                                if py >= 0 && py == y as i32 && px == x as i32 {
+                                    cell = Cell {
+                                        color: piece.color.to_slint_color(),
+                                        filled: true,
+                                    };
+                                }
+                            }
                         }
                     }
                 }
+
+                row.push(cell);
             }
+            display_grid.push(row);
         }
 
         display_grid
@@ -312,8 +330,7 @@ fn main() -> Result<(), slint::PlatformError> {
             let grid_model: Vec<slint::ModelRc<Cell>> = grid
                 .iter()
                 .map(|row| {
-                    let row_vec: Vec<Cell> = row.to_vec();
-                    slint::ModelRc::new(slint::VecModel::from(row_vec))
+                    slint::ModelRc::new(slint::VecModel::from(row.clone()))
                 })
                 .collect();
             

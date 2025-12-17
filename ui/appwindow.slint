@@ -1,4 +1,4 @@
-import { VerticalBox, HorizontalBox, GridBox } from "std-widgets.slint";
+import { VerticalBox, HorizontalBox } from "std-widgets.slint";
 
 export struct Cell {
     color: color,
@@ -22,172 +22,211 @@ export component AppWindow inherits Window {
     callback drop();
     callback start-game();
 
-    VerticalBox {
-        padding: 20px;
-        spacing: 20px;
-
-        // Header with score
-        HorizontalBox {
-            Text {
-                text: "TETRIS";
-                font-size: 32px;
-                font-weight: 900;
-                color: #00d9ff;
-                horizontal-alignment: center;
+    // Keyboard handling
+    FocusScope {
+        key-pressed(event) => {
+            if (event.text == Key.LeftArrow) {
+                root.move-left();
+                return accept;
             }
+            if (event.text == Key.RightArrow) {
+                root.move-right();
+                return accept;
+            }
+            if (event.text == Key.DownArrow) {
+                root.move-down();
+                return accept;
+            }
+            if (event.text == Key.UpArrow) {
+                root.rotate();
+                return accept;
+            }
+            if (event.text == Key.Space) {
+                root.drop();
+                return accept;
+            }
+            if (event.text == "r" || event.text == "R") {
+                root.start-game();
+                return accept;
+            }
+            return reject;
         }
 
-        HorizontalBox {
-            alignment: space-between;
-            
-            Text {
-                text: "Score: " + score;
-                font-size: 20px;
-                color: #ffffff;
+        VerticalBox {
+            padding: 20px;
+            spacing: 20px;
+
+            // Header with score
+            HorizontalBox {
+                Text {
+                    text: "TETRIS";
+                    font-size: 32px;
+                    font-weight: 900;
+                    color: #00d9ff;
+                    horizontal-alignment: center;
+                }
             }
 
-            if game-over: Text {
-                text: "GAME OVER";
-                font-size: 20px;
-                color: #ff0055;
-                font-weight: 700;
-            }
-        }
-
-        // Game grid
-        HorizontalBox {
-            alignment: center;
-            
-            Rectangle {
-                width: 320px;
-                height: 420px;
-                background: #0f0f1e;
-                border-radius: 8px;
-                border-width: 2px;
-                border-color: #00d9ff;
+            HorizontalBox {
+                alignment: space-between;
                 
-                VerticalLayout {
-                    padding: 10px;
-                    spacing: 0px;
+                Text {
+                    text: "Score: " + score;
+                    font-size: 20px;
+                    color: #ffffff;
+                }
+
+                if game-over: Text {
+                    text: "GAME OVER - Press R";
+                    font-size: 18px;
+                    color: #ff0055;
+                    font-weight: 700;
+                }
+            }
+
+            // Game grid
+            HorizontalBox {
+                alignment: center;
+                
+                Rectangle {
+                    width: 320px;
+                    height: 420px;
+                    background: #0f0f1e;
+                    border-radius: 8px;
+                    border-width: 2px;
+                    border-color: #00d9ff;
                     
-                    for row in grid: HorizontalLayout {
+                    VerticalLayout {
+                        padding: 10px;
                         spacing: 0px;
                         
-                        for cell in row: Rectangle {
-                            width: 20px;
-                            height: 20px;
-                            background: cell.filled ? cell.color : transparent;
-                            border-width: cell.filled ? 1px : 0.5px;
-                            border-color: cell.filled ? #ffffff40 : #ffffff10;
+                        for row in grid: HorizontalLayout {
+                            spacing: 0px;
+                            
+                            for cell in row: Rectangle {
+                                width: 20px;
+                                height: 20px;
+                                background: cell.filled ? cell.color : transparent;
+                                border-width: cell.filled ? 1px : 0.5px;
+                                border-color: cell.filled ? #ffffff40 : #ffffff10;
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // Controls
-        HorizontalBox {
-            spacing: 10px;
-            alignment: center;
+            // Instructions
+            Text {
+                text: "Arrow Keys: Move | Up/Space: Rotate/Drop | R: Restart";
+                font-size: 14px;
+                color: #888888;
+                horizontal-alignment: center;
+            }
 
-            Rectangle {
-                width: 60px;
-                height: 60px;
-                background: touch-left.has-hover ? #00b8d4 : #00d9ff;
-                border-radius: 8px;
-                
-                Text {
-                    text: "←";
-                    font-size: 24px;
-                    color: #000000;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
+            // Controls
+            HorizontalBox {
+                spacing: 10px;
+                alignment: center;
+
+                Rectangle {
+                    width: 60px;
+                    height: 60px;
+                    background: touch-left.has-hover ? #00b8d4 : #00d9ff;
+                    border-radius: 8px;
+                    
+                    Text {
+                        text: "←";
+                        font-size: 24px;
+                        color: #000000;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                    
+                    touch-left := TouchArea {
+                        clicked => { root.move-left(); }
+                    }
                 }
-                
-                touch-left := TouchArea {
-                    clicked => { root.move-left(); }
+
+                Rectangle {
+                    width: 60px;
+                    height: 60px;
+                    background: touch-rotate.has-hover ? #00b8d4 : #00d9ff;
+                    border-radius: 8px;
+                    
+                    Text {
+                        text: "↻";
+                        font-size: 24px;
+                        color: #000000;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                    
+                    touch-rotate := TouchArea {
+                        clicked => { root.rotate(); }
+                    }
+                }
+
+                Rectangle {
+                    width: 60px;
+                    height: 60px;
+                    background: touch-right.has-hover ? #00b8d4 : #00d9ff;
+                    border-radius: 8px;
+                    
+                    Text {
+                        text: "→";
+                        font-size: 24px;
+                        color: #000000;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                    
+                    touch-right := TouchArea {
+                        clicked => { root.move-right(); }
+                    }
+                }
+
+                Rectangle {
+                    width: 60px;
+                    height: 60px;
+                    background: touch-down.has-hover ? #00b8d4 : #00d9ff;
+                    border-radius: 8px;
+                    
+                    Text {
+                        text: "↓";
+                        font-size: 24px;
+                        color: #000000;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                    
+                    touch-down := TouchArea {
+                        clicked => { root.move-down(); }
+                    }
                 }
             }
 
-            Rectangle {
-                width: 60px;
-                height: 60px;
-                background: touch-rotate.has-hover ? #00b8d4 : #00d9ff;
-                border-radius: 8px;
+            // Start/Restart button
+            HorizontalBox {
+                alignment: center;
                 
-                Text {
-                    text: "↻";
-                    font-size: 24px;
-                    color: #000000;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
-                }
-                
-                touch-rotate := TouchArea {
-                    clicked => { root.rotate(); }
-                }
-            }
-
-            Rectangle {
-                width: 60px;
-                height: 60px;
-                background: touch-right.has-hover ? #00b8d4 : #00d9ff;
-                border-radius: 8px;
-                
-                Text {
-                    text: "→";
-                    font-size: 24px;
-                    color: #000000;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
-                }
-                
-                touch-right := TouchArea {
-                    clicked => { root.move-right(); }
-                }
-            }
-
-            Rectangle {
-                width: 60px;
-                height: 60px;
-                background: touch-down.has-hover ? #00b8d4 : #00d9ff;
-                border-radius: 8px;
-                
-                Text {
-                    text: "↓";
-                    font-size: 24px;
-                    color: #000000;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
-                }
-                
-                touch-down := TouchArea {
-                    clicked => { root.move-down(); }
-                }
-            }
-        }
-
-        // Start/Restart button
-        HorizontalBox {
-            alignment: center;
-            
-            Rectangle {
-                width: 200px;
-                height: 50px;
-                background: touch-start.has-hover ? #7700ff : #9d00ff;
-                border-radius: 8px;
-                
-                Text {
-                    text: game-over ? "Restart Game" : "Start Game";
-                    font-size: 18px;
-                    color: #ffffff;
-                    font-weight: 700;
-                    horizontal-alignment: center;
-                    vertical-alignment: center;
-                }
-                
-                touch-start := TouchArea {
-                    clicked => { root.start-game(); }
+                Rectangle {
+                    width: 200px;
+                    height: 50px;
+                    background: touch-start.has-hover ? #7700ff : #9d00ff;
+                    border-radius: 8px;
+                    
+                    Text {
+                        text: game-over ? "Restart Game" : "Start Game";
+                        font-size: 18px;
+                        color: #ffffff;
+                        font-weight: 700;
+                        horizontal-alignment: center;
+                        vertical-alignment: center;
+                    }
+                    
+                    touch-start := TouchArea {
+                        clicked => { root.start-game(); }
+                    }
                 }
             }
         }

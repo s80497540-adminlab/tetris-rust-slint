@@ -1,0 +1,183 @@
+import { VerticalBox, HorizontalBox } from "std-widgets.slint";
+
+export struct Cell {
+    color: color,
+    filled: bool,
+}
+
+export component AppWindow inherits Window {
+    title: "Tetris";
+    preferred-width: 400px;
+    preferred-height: 600px;
+    background: #1a1a2e;
+
+    in-out property <[[Cell]]> grid;
+    in-out property <int> score: 0;
+    in-out property <bool> game-over: false;
+    in-out property <string> next-piece-preview: "";
+
+    callback move-left();
+    callback move-right();
+    callback move-down();
+    callback rotate();
+    callback drop();
+    callback start-game();
+
+    VerticalBox {
+        padding: 20px;
+        spacing: 20px;
+
+        // Header with score
+        HorizontalBox {
+            Text {
+                text: "TETRIS";
+                font-size: 32px;
+                font-weight: 900;
+                color: #00d9ff;
+                horizontal-alignment: center;
+            }
+        }
+
+        HorizontalBox {
+            alignment: space-between;
+            
+            Text {
+                text: "Score: " + score;
+                font-size: 20px;
+                color: #ffffff;
+            }
+
+            if game-over: Text {
+                text: "GAME OVER";
+                font-size: 20px;
+                color: #ff0055;
+                font-weight: 700;
+            }
+        }
+
+        // Game grid
+        HorizontalBox {
+            alignment: center;
+            
+            Rectangle {
+                width: 300px;
+                height: 400px;
+                background: #0f0f1e;
+                border-radius: 8px;
+                border-width: 2px;
+                border-color: #00d9ff;
+
+                // Grid of cells
+                for row[row-index] in grid: HorizontalBox {
+                    y: row-index * 20px;
+                    
+                    for cell[col-index] in row: Rectangle {
+                        width: 20px;
+                        height: 20px;
+                        x: col-index * 20px;
+                        background: cell.filled ? cell.color : transparent;
+                        border-width: cell.filled ? 1px : 0px;
+                        border-color: #ffffff40;
+                    }
+                }
+            }
+        }
+
+        // Controls
+        HorizontalBox {
+            spacing: 10px;
+            alignment: center;
+
+            Button := Rectangle {
+                width: 60px;
+                height: 60px;
+                background: touch-left.has-hover ? #00b8d4 : #00d9ff;
+                border-radius: 8px;
+                
+                Text {
+                    text: "←";
+                    font-size: 24px;
+                    color: #000000;
+                }
+                
+                touch-left := TouchArea {
+                    clicked => { root.move-left(); }
+                }
+            }
+
+            Rectangle {
+                width: 60px;
+                height: 60px;
+                background: touch-rotate.has-hover ? #00b8d4 : #00d9ff;
+                border-radius: 8px;
+                
+                Text {
+                    text: "↻";
+                    font-size: 24px;
+                    color: #000000;
+                }
+                
+                touch-rotate := TouchArea {
+                    clicked => { root.rotate(); }
+                }
+            }
+
+            Rectangle {
+                width: 60px;
+                height: 60px;
+                background: touch-right.has-hover ? #00b8d4 : #00d9ff;
+                border-radius: 8px;
+                
+                Text {
+                    text: "→";
+                    font-size: 24px;
+                    color: #000000;
+                }
+                
+                touch-right := TouchArea {
+                    clicked => { root.move-right(); }
+                }
+            }
+
+            Rectangle {
+                width: 60px;
+                height: 60px;
+                background: touch-down.has-hover ? #00b8d4 : #00d9ff;
+                border-radius: 8px;
+                
+                Text {
+                    text: "↓";
+                    font-size: 24px;
+                    color: #000000;
+                }
+                
+                touch-down := TouchArea {
+                    clicked => { root.move-down(); }
+                }
+            }
+        }
+
+        // Start/Restart button
+        HorizontalBox {
+            alignment: center;
+            
+            Rectangle {
+                width: 200px;
+                height: 50px;
+                background: touch-start.has-hover ? #7700ff : #9d00ff;
+                border-radius: 8px;
+                
+                Text {
+                    text: game-over ? "Restart Game" : "Start Game";
+                    font-size: 18px;
+                    color: #ffffff;
+                    font-weight: 700;
+                }
+                
+                touch-start := TouchArea {
+                    clicked => { root.start-game(); }
+                }
+            }
+        }
+    }
+}

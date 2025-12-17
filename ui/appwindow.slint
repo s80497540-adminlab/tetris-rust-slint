@@ -1,4 +1,4 @@
-import { VerticalBox, HorizontalBox } from "std-widgets.slint";
+import { VerticalBox, HorizontalBox, GridBox } from "std-widgets.slint";
 
 export struct Cell {
     color: color,
@@ -8,13 +8,12 @@ export struct Cell {
 export component AppWindow inherits Window {
     title: "Tetris";
     preferred-width: 400px;
-    preferred-height: 600px;
+    preferred-height: 700px;
     background: #1a1a2e;
 
     in-out property <[[Cell]]> grid;
     in-out property <int> score: 0;
     in-out property <bool> game-over: false;
-    in-out property <string> next-piece-preview: "";
 
     callback move-left();
     callback move-right();
@@ -60,24 +59,27 @@ export component AppWindow inherits Window {
             alignment: center;
             
             Rectangle {
-                width: 300px;
-                height: 400px;
+                width: 320px;
+                height: 420px;
                 background: #0f0f1e;
                 border-radius: 8px;
                 border-width: 2px;
                 border-color: #00d9ff;
-
-                // Grid of cells
-                for row[row-index] in grid: HorizontalBox {
-                    y: row-index * 20px;
+                
+                VerticalLayout {
+                    padding: 10px;
+                    spacing: 0px;
                     
-                    for cell[col-index] in row: Rectangle {
-                        width: 20px;
-                        height: 20px;
-                        x: col-index * 20px;
-                        background: cell.filled ? cell.color : transparent;
-                        border-width: cell.filled ? 1px : 0px;
-                        border-color: #ffffff40;
+                    for row in grid: HorizontalLayout {
+                        spacing: 0px;
+                        
+                        for cell in row: Rectangle {
+                            width: 20px;
+                            height: 20px;
+                            background: cell.filled ? cell.color : transparent;
+                            border-width: cell.filled ? 1px : 0.5px;
+                            border-color: cell.filled ? #ffffff40 : #ffffff10;
+                        }
                     }
                 }
             }
@@ -88,7 +90,7 @@ export component AppWindow inherits Window {
             spacing: 10px;
             alignment: center;
 
-            Button := Rectangle {
+            Rectangle {
                 width: 60px;
                 height: 60px;
                 background: touch-left.has-hover ? #00b8d4 : #00d9ff;
@@ -98,6 +100,8 @@ export component AppWindow inherits Window {
                     text: "←";
                     font-size: 24px;
                     color: #000000;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
                 }
                 
                 touch-left := TouchArea {
@@ -115,6 +119,8 @@ export component AppWindow inherits Window {
                     text: "↻";
                     font-size: 24px;
                     color: #000000;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
                 }
                 
                 touch-rotate := TouchArea {
@@ -132,6 +138,8 @@ export component AppWindow inherits Window {
                     text: "→";
                     font-size: 24px;
                     color: #000000;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
                 }
                 
                 touch-right := TouchArea {
@@ -149,6 +157,8 @@ export component AppWindow inherits Window {
                     text: "↓";
                     font-size: 24px;
                     color: #000000;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
                 }
                 
                 touch-down := TouchArea {
@@ -172,6 +182,8 @@ export component AppWindow inherits Window {
                     font-size: 18px;
                     color: #ffffff;
                     font-weight: 700;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
                 }
                 
                 touch-start := TouchArea {
